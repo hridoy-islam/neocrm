@@ -19,7 +19,7 @@
                                     <div class="fcol-sm-12">
                                         <h3 class="title">
                                             <?php echo $this->lang->line('Bill To') ?> <a href='#' class="btn btn-primary btn-sm rounded" data-toggle="modal" data-target="#addCustomer">
-                                                <?php echo $this->lang->line('Add Client') ?>
+                                            <?php echo $this->lang->line('Add Client') ?>
                                             </a>
                                     </div>
                                 </div>
@@ -50,9 +50,11 @@
                                     </div>
                                     <hr>
                                     <div id="customer_pass"></div><?php echo $this->lang->line('Warehouse') ?> <select id="warehouses" class="selectpicker form-control">
-                                        <option value="0"><?php echo $this->lang->line('All') ?></option><?php foreach ($warehouse as $row) {
-                                                                                                                echo '<option value="' . $row['id'] . '">' . $row['title'] . '</option>';
-                                                                                                            } ?>
+                                        <option value="0"><?php echo $this->lang->line('All') ?></option><?php
+                                        foreach ($warehouse as $row) {
+                                            echo '<option value="' . $row['id'] . '">' . $row['title'] . '</option>';
+                                        }
+                                        ?>
 
                                     </select>
                                 </div>
@@ -109,11 +111,13 @@
                                     <div class="col-sm-6">
                                         <label for="taxformat" class="caption"><?php echo $this->lang->line('Tax') ?></label>
                                         <select class="form-control" name="taxformat" onchange="changeTaxFormat(this.value)" id="taxformat">
-                                            <?php if ($this->config->item('tax') == 1) {
+                                            <?php
+                                            if ($this->config->item('tax') == 1) {
                                                 echo '<option value="on" seleted>&raquo;On</option>';
                                             } else {
                                                 echo '<option value="off">&raquo;Off</option>';
-                                            } ?>
+                                            }
+                                            ?>
                                             <option value="on"><?php echo $this->lang->line('On') ?></option>
                                             <option value="off"><?php echo $this->lang->line('Off') ?></option>
                                         </select>
@@ -125,9 +129,9 @@
                                             <select class="form-control" onchange="changeDiscountFormat(this.value)" id="discountFormat">
 
                                                 <option value="%"><?php echo $this->lang->line('% Discount') . ' ' . $this->lang->line('After TAX') ?> </option>
-                                                <option value="flat"><?php echo $this->lang->line('Flat Discount') . ' ' . $this->lang->line('After TAX')  ?></option>
-                                                <option value="b_p"><?php echo $this->lang->line('% Discount') . ' ' . $this->lang->line('Before TAX')  ?></option>
-                                                <option value="bflat"><?php echo $this->lang->line('Flat Discount') . ' ' . $this->lang->line('Before TAX')  ?></option>
+                                                <option value="flat"><?php echo $this->lang->line('Flat Discount') . ' ' . $this->lang->line('After TAX') ?></option>
+                                                <option value="b_p"><?php echo $this->lang->line('% Discount') . ' ' . $this->lang->line('Before TAX') ?></option>
+                                                <option value="bflat"><?php echo $this->lang->line('Flat Discount') . ' ' . $this->lang->line('Before TAX') ?></option>
                                                 <!-- <option value="0">Off</option> -->
                                             </select>
                                         </div>
@@ -169,8 +173,8 @@
                                 <tr>
                                     <td><input type="text" class="form-control text-center" name="product_name[]" placeholder="<?php echo $this->lang->line('Enter Product name') ?>" id='productname-0'>
                                     </td>
-                                    <td><input type="text" class="form-control req amnt" name="product_qty[]" id="amount-0" onkeypress="return isNumber(event)" onkeyup="rowTotal('0'), billUpyog()" autocomplete="off" value="1"></td>
-                                    <td><input type="text" class="form-control req prc" name="product_price[]" id="price-0" onkeypress="return isNumber(event)" onkeyup="rowTotal('0'), billUpyog()" autocomplete="off"></td>
+                                    <td><input type="text" class="form-control req amnt" name="product_qty[]" id="amount-0" onkeypress="return isNumber(event)" onkeyup="rowTotal('0'), billUpyog()" autocomplete="off" value=""></td>
+                                    <td><input type="text" class="form-control req prc" name="product_price[]" id="price-0" value="" onkeypress="return isNumber(event)" onkeyup="rowTotal('0'), billUpyog()" autocomplete="off"></td>
                                     <td><input type="text" class="form-control vat " name="product_tax[]" id="vat-0" onkeypress="return isNumber(event)" onkeyup="rowTotal('0'), billUpyog()" autocomplete="off"></td>
                                     <td class="text-center" id="texttaxa-0">0</td>
                                     <td><input type="text" class="form-control discount" name="product_discount[]" onkeypress="return isNumber(event)" id="discount-0" onkeyup="rowTotal('0'), billUpyog()" autocomplete="off"></td>
@@ -180,110 +184,125 @@
                                     <td class="text-center">
 
                                     </td>
-                                    <input type="hidden" name="taxa[]" id="taxa-0" value="0">
-                                    <input type="hidden" name="disca[]" id="disca-0" value="0">
-                                    <input type="hidden" class="ttInput" name="product_subtotal[]" id="total-0" value="0">
-                                    <input type="hidden" class="pdIn" name="pid[]" id="pid-0" value="0">
-                                </tr>
-                                <tr>
-                                    <td colspan="8"><textarea id="dpid-0" class="form-control" name="product_description[]" placeholder="<?php echo $this->lang->line('Enter Product description'); ?>" autocomplete="off"></textarea><br></td>
-                                </tr>
+                            <input type="hidden" name="taxa[]" id="taxa-0" value="0">
+                            <input type="hidden" name="disca[]" id="disca-0" value="0">
+                            <input type="hidden" class="ttInput" name="product_subtotal[]" id="total-0" value="0">
+                            <input type="hidden" class="pdIn" name="pid[]" id="pid-0" value="0">
+                            </tr>
+                            <tr>
+                                <td colspan="8"><textarea id="dpid-0" class="form-control" name="product_description[]" placeholder="<?php echo $this->lang->line('Enter Product description'); ?>" autocomplete="off"></textarea><br></td>
+                            </tr>
 
-                                <tr class="last-item-row sub_c">
-                                    <td class="add-row">
-                                        <button type="button" class="btn btn-success" aria-label="Left Align" data-toggle="tooltip" data-placement="top" title="Add product row" id="addproduct">
-                                            <i class="icon-plus-square"></i> <?php echo $this->lang->line('Add Row') ?>
-                                        </button>
-                                    </td>
-                                    <td colspan="7"></td>
-                                </tr>
+                            <tr class="last-item-row sub_c">
+                                <td class="add-row">
+                                    <button type="button" class="btn btn-success" aria-label="Left Align" data-toggle="tooltip" data-placement="top" title="Add product row" id="addproduct">
+                                        <i class="icon-plus-square"></i> <?php echo $this->lang->line('Add Row') ?>
+                                    </button>
+                                </td>
+                                <td colspan="7"></td>
+                            </tr>
 
-                                <tr class="sub_c" style="display: table-row;">
-                                    <td colspan="6" align="right"><input type="hidden" value="0" id="subttlform" name="subtotal"><strong><?php echo $this->lang->line('Total Tax') ?></strong>
-                                    </td>
-                                    <td align="left" colspan="2"><span class="currenty lightMode"><?php echo $this->config->item('currency'); ?></span>
-                                        <span id="taxr" class="lightMode">0</span>
-                                    </td>
-                                </tr>
-                                <tr class="sub_c" style="display: table-row;">
-                                    <td colspan="6" align="right">
-                                        <strong><?php echo $this->lang->line('Total Discount') ?></strong>
-                                    </td>
-                                    <td align="left" colspan="2"><span class="currenty lightMode"><?php echo $this->config->item('currency');
-                                                                                                    if (isset($_GET['project'])) {
-                                                                                                        echo '<input type="hidden" value="' . intval($_GET['project']) . '" name="prjid">';
-                                                                                                    } ?></span>
-                                        <span id="discs" class="lightMode">0</span>
-                                    </td>
-                                </tr>
+                            <tr class="sub_c" style="display: table-row;">
+                                <td colspan="6" align="right"><input type="hidden" value="0" id="subttlform" name="subtotal"><strong><?php echo $this->lang->line('Total Tax') ?></strong>
+                                </td>
+                                <td align="left" colspan="2"><span class="currenty lightMode"><?php echo $this->config->item('currency'); ?></span>
+                                    <span id="taxr" class="lightMode">0</span>
+                                </td>
+                            </tr>
+                            <tr class="sub_c" style="display: table-row;">
+                                <td colspan="6" align="right">
+                                    <strong><?php echo $this->lang->line('Total Discount') ?></strong>
+                                </td>
+                                <td align="left" colspan="2"><span class="currenty lightMode"><?php
+                                        echo $this->config->item('currency');
+                                        if (isset($_GET['project'])) {
+                                            echo '<input type="hidden" value="' . intval($_GET['project']) . '" name="prjid">';
+                                        }
+                                        ?></span>
+                                    <span id="discs" class="lightMode">0</span>
+                                </td>
+                            </tr>
 
-                                <tr class="sub_c" style="display: table-row;">
-                                    <td colspan="6" align="right">
-                                        <strong><?php echo $this->lang->line('Shipping') ?></strong>
-                                    </td>
-                                    <td align="left" colspan="2"><input type="text" class="form-control shipVal" onkeypress="return isNumber(event)" placeholder="Value" name="shipping" autocomplete="off" onkeyup="updateTotal()"></td>
-                                </tr>
+                            <tr class="sub_c" style="display: table-row;">
+                                <td colspan="6" align="right">
+                                    <strong><?php echo $this->lang->line('Shipping') ?></strong>
+                                </td>
+                                <td align="left" colspan="2"><input type="text" class="form-control shipVal" onkeypress="return isNumber(event)" placeholder="Value" name="shipping" autocomplete="off" onkeyup="updateTotal()"></td>
+                            </tr>
 
-                                <!-- My -->
-                                <tr class="sub_c" style="display: table-row;">
-                                    <td colspan="2">
-                                        <label for="taxformat" class="caption">Debit Account</label><select name="debitaccount" class="form-control">
-                                            <?php foreach ($accounts as $account) : ?>
-                                                <option value="<?php echo $account['id']; ?>"><?php echo $account['holder']; ?></option>
-                                            <?php endforeach; ?>
-                                        </select>
-                                    </td>
-                                </tr>
+                            <!-- My -->
+                            <tr class="sub_c" style="display: table-row;">
+                                <td colspan="2">
+                                    <label for="taxformat" class="caption">Debit Account</label>
+                                    <select name="debitaccount" class="form-control">
+                                        <option value="">Select Account</option>                        
+                                        <?php foreach ($accounts as $account) : ?>
+                                            <option value="<?php echo $account['id']; ?>"><?php echo $account['holder']; ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </td>
+                            </tr>
 
-                                <tr class="sub_c" style="display: table-row;">
-                                    <td colspan="2">
-                                        <label for="taxformat" class="caption">Credit Account</label><select name="creditaccount" class="form-control">
-                                            <?php foreach ($accounts as $account) : ?>
-                                                <option value="<?php echo $account['id']; ?>"><?php echo $account['holder']; ?></option>
-                                            <?php endforeach; ?>
-                                        </select>
-                                    </td>
-                                </tr>
+                            <tr class="sub_c" style="display: table-row;">
+                                <td colspan="2">
+                                    <label for="taxformat" class="caption">Credit Account</label>
+                                    <select name="creditaccount" class="form-control">
+                                        <option value="">Select Account</option>                        
+                                        <?php foreach ($accounts as $account) : ?>
+                                            <option value="<?php echo $account['id']; ?>"><?php echo $account['holder']; ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr class="sub_c" style="display: table-row;">
+                                <td colspan="2">
+                                    <label for="taxformat" class="caption">Amount</label>
+                                    <input type="text" class="form-control" name="crdr_amount" required="">
+                                </td>
+                            </tr>
 
-                                <!-- my -->
+                            <!-- my -->
 
-                                <tr class="sub_c" style="display: table-row;">
-                                    <td colspan="2"><?php if ($exchange['active'] == 1) {
-                                                        echo $this->lang->line('Payment Currency client') . ' <small>' . $this->lang->line('based on live market') ?></small>
-                                            <select name="mcurrency" class="selectpicker form-control">
-                                                <option value="0">Default</option>
-                                                <?php foreach ($currency as $row) {
-                                                            echo '<option value="' . $row['id'] . '">' . $row['symbol'] . ' (' . $row['code'] . ')</option>';
-                                                        } ?>
+                            <tr class="sub_c" style="display: table-row;">
+                                <td colspan="2"><?php
+                                    if ($exchange['active'] == 1) {
+                                        echo $this->lang->line('Payment Currency client') . ' <small>' . $this->lang->line('based on live market')
+                                        ?></small>
+                                        <select name="mcurrency" class="selectpicker form-control">
+                                            <option value="0">Default</option>
+                                            <?php
+                                            foreach ($currency as $row) {
+                                                echo '<option value="' . $row['id'] . '">' . $row['symbol'] . ' (' . $row['code'] . ')</option>';
+                                            }
+                                            ?>
 
-                                            </select><?php } ?>
-                                    </td>
-                                    <td colspan="4" align="right"><strong><?php echo $this->lang->line('Grand Total') ?>
-                                            (<span class="currenty lightMode"><?php echo $this->config->item('currency'); ?></span>)</strong>
-                                    </td>
-                                    <td align="left" colspan="2"><input type="text" name="total" class="form-control" id="invoiceyoghtml" readonly="">
+                                        </select><?php } ?>
+                                </td>
+                                <td colspan="4" align="right"><strong><?php echo $this->lang->line('Grand Total') ?>
+                                        (<span class="currenty lightMode"><?php echo $this->config->item('currency'); ?></span>)</strong>
+                                </td>
+                                <td align="left" colspan="2"><input type="text" name="total" class="form-control get_invoiceyoghtml" id="invoiceyoghtml" readonly="">
 
-                                    </td>
-                                </tr>
-                                <tr class="sub_c" style="display: table-row;">
-                                    <td colspan="2"><?php echo $this->lang->line('Payment Terms') ?> <select name="pterms" class="selectpicker form-control"><?php foreach ($terms as $row) {
-                                                                                                                                                                    echo '<option value="' . $row['id'] . '">' . $row['title'] . '</option>';
-                                                                                                                                                                } ?>
+                                </td>
+                            </tr>
+                            <tr class="sub_c" style="display: table-row;">
+                                <td colspan="2"><?php echo $this->lang->line('Payment Terms') ?> <select name="pterms" class="selectpicker form-control"><?php
+                                        foreach ($terms as $row) {
+                                            echo '<option value="' . $row['id'] . '">' . $row['title'] . '</option>';
+                                        }
+                                        ?>
 
-                                        </select></td>
-                                    <td align="right" colspan="6"><input type="submit" class="btn btn-success sub-btn" value="<?php echo $this->lang->line('Generate Invoice') ?> " id="submit-data" data-loading-text="Creating...">
+                                    </select></td>
+                                <td align="right" colspan="6"><input type="submit" class="btn btn-success sub-btn" value="<?php echo $this->lang->line('Generate Invoice') ?> " id="submit-data" data-loading-text="Creating...">
 
-                                    </td>
-                                </tr>
-
-
-
+                                </td>
+                            </tr>
 
                             </tbody>
                         </table>
                     </div>
 
- 
+
 
                     <input type="hidden" value="invoices/action" id="action-url">
                     <input type="hidden" value="search" id="billtype">
@@ -291,11 +310,13 @@
                     <input type="hidden" value="<?php echo $this->config->item('currency'); ?>" name="currency">
                     <input type="hidden" value="%" name="taxformat" id="tax_format">
                     <input type="hidden" value="%" name="discountFormat" id="discount_format">
-                    <input type="hidden" value="<?php if ($this->config->item('tax') == 1) {
-                                                    echo 'yes';
-                                                } else {
-                                                    echo 'no';
-                                                } ?>" name="tax_handle" id="tax_status">
+                    <input type="hidden" value="<?php
+                    if ($this->config->item('tax') == 1) {
+                        echo 'yes';
+                    } else {
+                        echo 'no';
+                    }
+                    ?>" name="tax_handle" id="tax_status">
                     <input type="hidden" value="yes" name="applyDiscount" id="discount_handle">
 
 

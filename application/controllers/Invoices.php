@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Neo Billing -  Accounting,  Invoicing  and CRM Software
  * Copyright (c) UltimateKode.com. All Rights Reserved
@@ -15,38 +16,33 @@
  *  * here- http://codecanyon.net/licenses/standard/
  * ***********************************************************************
  */
-
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Invoices extends CI_Controller
-{
-    public function __construct()
-    {
+class Invoices extends CI_Controller {
+
+    public function __construct() {
         parent::__construct();
         $this->load->model('invoices_model', 'invocies');
         $this->load->model('accounts_model', 'accounts');
         $this->load->library("Aauth");
+        $this->load->library("Aauth");
+        $this->load->model('transactions_model', 'transactions');
         if (!$this->aauth->is_loggedin()) {
             redirect('/user/', 'refresh');
         }
         if ($this->aauth->get_user()->roleid < 2) {
 
             exit('<h3>Sorry! You have insufficient permissions to access this section</h3>');
-
         }
         if ($this->aauth->get_user()->roleid == 2) {
             $this->limited = $this->aauth->get_user()->id;
         } else {
             $this->limited = '';
         }
-
     }
 
-     
-
     //create invoice
-    public function create()
-    {
+    public function create() {
         $this->load->model('customers_model', 'customers');
         $this->load->model('plugins_model', 'plugins');
         $this->load->model('accounts_model', 'accounts');
@@ -65,8 +61,7 @@ class Invoices extends CI_Controller
     }
 
     //edit invoice
-    public function edit()
-    {
+    public function edit() {
 
         $tid = intval($this->input->get('id'));
         $data['id'] = $tid;
@@ -76,7 +71,8 @@ class Invoices extends CI_Controller
         $data['terms'] = $this->invocies->billingterms();
         $data['currency'] = $this->invocies->currencies();
         $data['invoice'] = $this->invocies->invoice_details($tid, $this->limited);
-        if ($data['invoice']) $data['products'] = $this->invocies->invoice_products($tid);
+        if ($data['invoice'])
+            $data['products'] = $this->invocies->invoice_products($tid);
         $head['title'] = "Edit Invoice #$tid";
         $head['usernm'] = $this->aauth->get_user()->username;
         $data['warehouse'] = $this->invocies->warehouses();
@@ -84,14 +80,13 @@ class Invoices extends CI_Controller
         $data['exchange'] = $this->plugins->universal_api(5);
 
         $this->load->view('fixed/header', $head);
-        if ($data['invoice']) $this->load->view('invoices/edit', $data);
+        if ($data['invoice'])
+            $this->load->view('invoices/edit', $data);
         $this->load->view('fixed/footer');
-
     }
 
     //invoices list
-    public function index()
-    {
+    public function index() {
         $head['title'] = "Manage Invoices";
         $head['usernm'] = $this->aauth->get_user()->username;
         $this->load->view('fixed/header', $head);
@@ -100,18 +95,17 @@ class Invoices extends CI_Controller
     }
 
     //action
-    public function action()
-    {
+    public function action() {
 
-        $customer_id = $this->input->post('customer_id',true);
-        $invocieno = $this->input->post('invocieno',true);
-        $invoicedate = $this->input->post('invoicedate',true);
-        $invocieduedate = $this->input->post('invocieduedate',true);
-        $notes = $this->input->post('notes',true);
+        $customer_id = $this->input->post('customer_id', true);
+        $invocieno = $this->input->post('invocieno', true);
+        $invoicedate = $this->input->post('invoicedate', true);
+        $invocieduedate = $this->input->post('invocieduedate', true);
+        $notes = $this->input->post('notes', true);
         $tax = $this->input->post('tax_handle');
-        $subtotal = $this->input->post('subtotal',true);
+        $subtotal = $this->input->post('subtotal', true);
         $shipping = $this->input->post('shipping');
-        $refer = $this->input->post('refer',true);
+        $refer = $this->input->post('refer', true);
         $total = $this->input->post('total');
         $project = $this->input->post('prjid');
         $total_tax = 0;
@@ -119,7 +113,12 @@ class Invoices extends CI_Controller
         $discountFormat = $this->input->post('discountFormat');
         $pterms = $this->input->post('pterms');
         $currency = $this->input->post('mcurrency');
-        
+
+        $debitaccount = $this->input->post('debitaccount');
+        $creditaccount = $this->input->post('creditaccount');
+        $crdr_amount = $this->input->post('crdr_amount');
+        $this->transactions->addtransfer($debitaccount, $creditaccount, $crdr_amount, $this->aauth->get_user()->id);
+
         $i = 0;
         if ($discountFormat == '0') {
             $discstatus = 0;
@@ -140,7 +139,8 @@ class Invoices extends CI_Controller
         $prodindex = 0;
         $itc = 0;
         $flag = false;
-        $msg='';
+        $msg = '';
+
         if ($tax == 'yes') {
             $textst = 1;
 
@@ -178,7 +178,6 @@ class Invoices extends CI_Controller
                 $i++;
                 $prodindex++;
 
-
                 $amt = intval($product_qty[$key]);
                 if ($product_id[$key] > 0) {
 
@@ -188,18 +187,16 @@ class Invoices extends CI_Controller
                     $query = $this->db->get();
                     $product = $query->row_array();
 
-                    if($product['qty']-$amt>=0) {
+                    if ($product['qty'] - $amt >= 0) {
                         $this->db->set('qty', "qty-$amt", FALSE);
                         $this->db->where('pid', $product_id[$key]);
                         $this->db->update('products');
                     } else {
-                        $msg.=$product['product_name'].' (Low Stock) <br>';
+                        $msg .= $product['product_name'] . ' (Low Stock) <br>';
                         $flag = false;
                     }
                 }
                 $itc += $amt;
-
-
             }
         } else {
             $textst = 0;
@@ -207,15 +204,14 @@ class Invoices extends CI_Controller
 
                 $product_id = $this->input->post('pid');
 
-                $product_name1 = $this->input->post('product_name',true);
+                $product_name1 = $this->input->post('product_name', true);
                 $product_qty = $this->input->post('product_qty');
                 $product_price = $this->input->post('product_price');
                 $product_discount = $this->input->post('product_discount');
                 $product_subtotal = $this->input->post('product_subtotal');
                 $ptotal_disc = $this->input->post('disca');
-                $product_des = $this->input->post('product_description',true);
+                $product_des = $this->input->post('product_description', true);
                 $total_discount += $ptotal_disc[$key];
-
 
                 $data = array(
                     'tid' => $invocieno,
@@ -228,7 +224,6 @@ class Invoices extends CI_Controller
                     'totaldiscount' => $ptotal_disc[$key],
                     'product_des' => $product_des[$key]
                 );
-
 
                 $flag = true;
                 $productlist[$prodindex] = $data;
@@ -246,24 +241,22 @@ class Invoices extends CI_Controller
                 $query = $this->db->get();
                 $product = $query->row_array();
 
-                if($product['qty']-$amt>=0) {
+                if ($product['qty'] - $amt >= 0) {
                     $this->db->set('qty', "qty-$amt", FALSE);
                     $this->db->where('pid', $product_id[$key]);
                     $this->db->update('products');
                 } else {
-                    $msg.=$product['product_name'].' (Low Stock) <br>';
+                    $msg .= $product['product_name'] . ' (Low Stock) <br>';
                     $flag = false;
                 }
             }
 
 
             $itc += $amt;
-
         }
 
 
         $transok = true;
-
 
         //Invoice Data
         $bill_date = datefordatabase($invoicedate);
@@ -283,11 +276,9 @@ class Invoices extends CI_Controller
                     "Invalid Entry!"));
                 $transok = false;
             }
-
-
         } else {
             echo json_encode(array('status' => 'Error', 'message' =>
-                $msg." Please choose product from product list. Go to Item manager section if you have not added the products."));
+                $msg . " Please choose product from product list. Go to Item manager section if you have not added the products."));
             $transok = false;
         }
 
@@ -296,23 +287,18 @@ class Invoices extends CI_Controller
             $data = array('pid' => $project, 'meta_key' => 11, 'meta_data' => $invocieno, 'value' => '0');
 
             $this->db->insert('project_meta', $data);
-
         }
 
 
         if ($transok) {
-            
+
             $this->db->trans_complete();
         } else {
             $this->db->trans_rollback();
         }
-
-
     }
 
-
-    public function ajax_list()
-    {
+    public function ajax_list() {
 
         $list = $this->invocies->get_datatables($this->limited);
 
@@ -344,11 +330,9 @@ class Invoices extends CI_Controller
 
         //output to json format
         echo json_encode($output);
-
     }
 
-    public function view()
-    {
+    public function view() {
         $this->load->model('accounts_model');
         $data['acclist'] = $this->accounts_model->accountslist();
         $tid = intval($this->input->get('id'));
@@ -356,41 +340,43 @@ class Invoices extends CI_Controller
         $head['title'] = "View Invoice $tid";
         $data['invoice'] = $this->invocies->invoice_details($tid, $this->limited);
         $data['attach'] = $this->invocies->attach($tid);
-        if ($data['invoice']) $data['products'] = $this->invocies->invoice_products($tid);
-        if ($data['invoice']) $data['activity'] = $this->invocies->invoice_transactions($tid);
+        if ($data['invoice'])
+            $data['products'] = $this->invocies->invoice_products($tid);
+        if ($data['invoice'])
+            $data['activity'] = $this->invocies->invoice_transactions($tid);
 
         $data['employee'] = $this->invocies->employee($data['invoice']['eid']);
 
         $head['usernm'] = $this->aauth->get_user()->username;
         $this->load->view('fixed/header', $head);
-        if ($data['invoice']) $this->load->view('invoices/view', $data);
+        if ($data['invoice'])
+            $this->load->view('invoices/view', $data);
         $this->load->view('fixed/footer');
-
     }
 
-
-    public function printinvoice()
-    {
+    public function printinvoice() {
 
         $tid = intval($this->input->get('id'));
 
         $data['id'] = $tid;
         $data['title'] = "Invoice $tid";
         $data['invoice'] = $this->invocies->invoice_details($tid, $this->limited);
-        if ($data['invoice']) $data['products'] = $this->invocies->invoice_products($tid);
-        if ($data['invoice']) $data['employee'] = $this->invocies->employee($data['invoice']['eid']);
+        if ($data['invoice'])
+            $data['products'] = $this->invocies->invoice_products($tid);
+        if ($data['invoice'])
+            $data['employee'] = $this->invocies->employee($data['invoice']['eid']);
 
         ini_set('memory_limit', '-1');
 
-        $html = $this->load->view('invoices/view-print-'.LTR, $data, true);
-        $html2 = $this->load->view('invoices/header-print-'.LTR, $data, true);
+        $html = $this->load->view('invoices/view-print-' . LTR, $data, true);
+        $html2 = $this->load->view('invoices/header-print-' . LTR, $data, true);
 
         //PDF Rendering
         $this->load->library('pdf_invoice');
 
         $pdf = $this->pdf_invoice->load();
         $pdf->SetHTMLHeader($html2);
-        $pdf->SetHTMLFooter('<div style="text-align: right;font-family: serif; font-size: 8pt; color: #5C5C5C; font-style: italic;margin-top:0pt;">{PAGENO}/{nbpg} #'.$tid.'</div>');
+        $pdf->SetHTMLFooter('<div style="text-align: right;font-family: serif; font-size: 8pt; color: #5C5C5C; font-style: italic;margin-top:0pt;">{PAGENO}/{nbpg} #' . $tid . '</div>');
 
         $pdf->WriteHTML($html);
 
@@ -400,39 +386,33 @@ class Invoices extends CI_Controller
         } else {
             $pdf->Output('Invoice_#' . $tid . '.pdf', 'I');
         }
-
-
     }
 
-    public function delete_i()
-    {
+    public function delete_i() {
         $id = $this->input->post('deleteid');
 
         if ($this->invocies->invoice_delete($id, $this->limited)) {
             echo json_encode(array('status' => 'Success', 'message' =>
                 $this->lang->line('DELETED')));
-
         } else {
 
             echo json_encode(array('status' => 'Error', 'message' =>
                 $this->lang->line('ERROR')));
         }
-
     }
 
-    public function editaction()
-    {
+    public function editaction() {
 
 
         $customer_id = $this->input->post('customer_id');
         $invocieno = $this->input->post('invocieno');
         $invoicedate = $this->input->post('invoicedate');
         $invocieduedate = $this->input->post('invocieduedate');
-        $notes = $this->input->post('notes',true);
+        $notes = $this->input->post('notes', true);
         $tax = $this->input->post('tax_handle');
         $subtotal = $this->input->post('subtotal');
         $shipping = $this->input->post('shipping');
-        $refer = $this->input->post('refer',true);
+        $refer = $this->input->post('refer', true);
         $total = $this->input->post('total');
         $total_tax = 0;
         $total_discount = 0;
@@ -443,8 +423,8 @@ class Invoices extends CI_Controller
 
         if ($this->limited) {
             $employee = $this->invocies->invoice_details($invocieno, $this->limited);
-            if ($this->aauth->get_user()->id != $employee['eid']) exit();
-
+            if ($this->aauth->get_user()->id != $employee['eid'])
+                exit();
         }
         if ($discountFormat == '0') {
             $discstatus = 0;
@@ -456,15 +436,12 @@ class Invoices extends CI_Controller
             echo json_encode(array('status' => 'Error', 'message' =>
                 $this->lang->line('Please add a new client')));
             exit;
-
-
         }
 
 
         $this->db->trans_start();
         $flag = false;
         $transok = true;
-
 
         //Product Data
         $pid = $this->input->post('pid');
@@ -480,7 +457,7 @@ class Invoices extends CI_Controller
             foreach ($pid as $key => $value) {
 
                 $product_id = $this->input->post('pid');
-                $product_name1 = $this->input->post('product_name',true);
+                $product_name1 = $this->input->post('product_name', true);
                 $product_qty = $this->input->post('product_qty');
                 $old_product_qty = $this->input->post('old_product_qty');
                 $product_price = $this->input->post('product_price');
@@ -489,7 +466,7 @@ class Invoices extends CI_Controller
                 $product_subtotal = $this->input->post('product_subtotal');
                 $ptotal_tax = $this->input->post('taxa');
                 $ptotal_disc = $this->input->post('disca');
-                $product_des = $this->input->post('product_description',true);
+                $product_des = $this->input->post('product_description', true);
                 $total_discount += $ptotal_disc[$key];
                 $total_tax += $ptotal_tax[$key];
 
@@ -505,17 +482,12 @@ class Invoices extends CI_Controller
                     'totaltax' => $ptotal_tax[$key],
                     'totaldiscount' => $ptotal_disc[$key],
                     'product_des' => $product_des[$key]
-
                 );
-
 
                 $flag = true;
                 $productlist[$prodindex] = $data;
                 $i++;
                 $prodindex++;
-
-
-
 
                 if ($product_id[$key] > 0) {
                     $amt = intval($product_qty[$key]) - intval(@$old_product_qty[$key]);
@@ -525,30 +497,28 @@ class Invoices extends CI_Controller
                     $query = $this->db->get();
                     $product = $query->row_array();
 
-                    if($product['qty']-$amt>=0) {
+                    if ($product['qty'] - $amt >= 0) {
                         $this->db->set('qty', "qty-$amt", FALSE);
                         $this->db->where('pid', $product_id[$key]);
                         $this->db->update('products');
                     } else {
-                        $msg.=$product['product_name'].' (Low Stock) <br>';
+                        $msg .= $product['product_name'] . ' (Low Stock) <br>';
                         $flag = false;
                     }
                 }
                 $itc += $amt ?? 0;
-
-
             }
         } else {
             $taxstatus = 0;
             foreach ($pid as $key => $value) {
                 $product_id = $this->input->post('pid');
-                $product_name1 = $this->input->post('product_name',true);
+                $product_name1 = $this->input->post('product_name', true);
                 $product_qty = $this->input->post('product_qty');
                 $old_product_qty = $this->input->post('old_product_qty');
                 $product_price = $this->input->post('product_price');
                 $product_discount = $this->input->post('product_discount');
                 $product_subtotal = $this->input->post('product_subtotal');
-                $product_des = $this->input->post('product_description',true);
+                $product_des = $this->input->post('product_description', true);
                 $ptotal_disc = $this->input->post('disca');
                 $total_discount += $ptotal_disc[$key];
                 $data = array(
@@ -561,7 +531,6 @@ class Invoices extends CI_Controller
                     'product_des' => $product_des[$key]
                 );
 
-
                 $flag = true;
                 $productlist[$prodindex] = $data;
                 $i++;
@@ -575,19 +544,18 @@ class Invoices extends CI_Controller
                     $query = $this->db->get();
                     $product = $query->row_array();
 
-                    if($product['qty']-$amt>=0) {
+                    if ($product['qty'] - $amt >= 0) {
                         $this->db->set('qty', "qty-$amt", FALSE);
                         $this->db->where('pid', $product_id[$key]);
                         $this->db->update('products');
                     } else {
-                        $msg.=$product['product_name'].' (Low Stock) <br>';
+                        $msg .= $product['product_name'] . ' (Low Stock) <br>';
                         $flag = false;
                     }
                 }
 
 
                 $itc += $amt;
-
             }
         }
 
@@ -608,8 +576,6 @@ class Invoices extends CI_Controller
                     $this->lang->line('ERROR')));
                 $transok = false;
             }
-
-
         } else {
             echo json_encode(array('status' => 'Error', 'message' =>
                 "Please add at least one product in invoice"));
@@ -631,8 +597,6 @@ class Invoices extends CI_Controller
                     $this->db->update('products');
                 }
             }
-
-
         }
 
 
@@ -643,11 +607,9 @@ class Invoices extends CI_Controller
         }
     }
 
-    public function update_status()
-    {
+    public function update_status() {
         $tid = $this->input->post('tid');
         $status = $this->input->post('status');
-
 
         $this->db->set('status', $status);
         $this->db->where('tid', $tid);
@@ -657,67 +619,61 @@ class Invoices extends CI_Controller
             $this->lang->line('UPDATED'), 'pstatus' => $status));
     }
 
-
-    public function addcustomer()
-    {
-        $name = $this->input->post('name',true);
-        $company = $this->input->post('company',true);
-        $phone = $this->input->post('phone',true);
-        $email = $this->input->post('email',true);
-        $address = $this->input->post('address',true);
-        $city = $this->input->post('city',true);
-        $region = $this->input->post('region',true);
-        $country = $this->input->post('country',true);
-        $postbox = $this->input->post('postbox',true);
-        $taxid = $this->input->post('taxid',true);
+    public function addcustomer() {
+        $name = $this->input->post('name', true);
+        $company = $this->input->post('company', true);
+        $phone = $this->input->post('phone', true);
+        $email = $this->input->post('email', true);
+        $address = $this->input->post('address', true);
+        $city = $this->input->post('city', true);
+        $region = $this->input->post('region', true);
+        $country = $this->input->post('country', true);
+        $postbox = $this->input->post('postbox', true);
+        $taxid = $this->input->post('taxid', true);
         $customergroup = $this->input->post('customergroup');
-        $name_s = $this->input->post('name_s',true);
-        $phone_s = $this->input->post('phone_s',true);
-        $email_s = $this->input->post('email_s',true);
-        $address_s = $this->input->post('address_s',true);
-        $city_s = $this->input->post('city_s',true);
-        $region_s = $this->input->post('region_s',true);
-        $country_s = $this->input->post('country_s',true);
-        $postbox_s = $this->input->post('postbox_s',true);
-		$this->load->model('customers_model', 'customers');
+        $name_s = $this->input->post('name_s', true);
+        $phone_s = $this->input->post('phone_s', true);
+        $email_s = $this->input->post('email_s', true);
+        $address_s = $this->input->post('address_s', true);
+        $city_s = $this->input->post('city_s', true);
+        $region_s = $this->input->post('region_s', true);
+        $country_s = $this->input->post('country_s', true);
+        $postbox_s = $this->input->post('postbox_s', true);
+        $this->load->model('customers_model', 'customers');
         $this->customers->add($name, $company, $phone, $email, $address, $city, $region, $country, $postbox, $customergroup, $taxid, $name_s, $phone_s, $email_s, $address_s, $city_s, $region_s, $country_s, $postbox_s);
-
     }
 
-    public function file_handling()
-    {
-        if($this->input->get('op')) {
+    public function file_handling() {
+        if ($this->input->get('op')) {
             $name = $this->input->get('name');
             $invoice = $this->input->get('invoice');
-            if ($this->invocies->meta_delete($invoice,1, $name)){
-            echo json_encode(array('status' => 'Success'));
-        }
-        }
-        else {
+            if ($this->invocies->meta_delete($invoice, 1, $name)) {
+                echo json_encode(array('status' => 'Success'));
+            }
+        } else {
             $id = $this->input->get('id');
             $this->load->library("Uploadhandler_generic", array(
                 'accept_file_types' => '/\.(gif|jpe?g|png|docx|docs|txt|pdf|xls)$/i', 'upload_dir' => FCPATH . 'userfiles/attach/', 'upload_url' => base_url() . 'userfiles/attach/'
             ));
-            $files = (string)$this->uploadhandler_generic->filenaam();
+            $files = (string) $this->uploadhandler_generic->filenaam();
             if ($files != '') {
 
                 $this->invocies->meta_insert($id, 1, $files);
             }
         }
-
-
     }
 
-    	    public function delivery()
-    {
+    public function delivery() {
 
         $tid = intval($this->input->get('id'));
 
         $data['id'] = $tid;
         $data['title'] = "Invoice $tid";
         $data['invoice'] = $this->invocies->invoice_details($tid, $this->limited);
-        if ($data['invoice']) $data['products'] = $this->invocies->invoice_products($tid);
-        if ($data['invoice']) $data['employee'] = $this->invocies->employee($data['invoice']['eid']);
+        if ($data['invoice'])
+            $data['products'] = $this->invocies->invoice_products($tid);
+        if ($data['invoice'])
+            $data['employee'] = $this->invocies->employee($data['invoice']['eid']);
 
         ini_set('memory_limit', '-1');
 
@@ -728,7 +684,7 @@ class Invoices extends CI_Controller
 
         $pdf = $this->pdf->load();
 
-        $pdf->SetHTMLFooter('<div style="text-align: right;font-family: serif; font-size: 8pt; color: #5C5C5C; font-style: italic;margin-top:-6pt;">{PAGENO}/{nbpg} #'.$tid.'</div>');
+        $pdf->SetHTMLFooter('<div style="text-align: right;font-family: serif; font-size: 8pt; color: #5C5C5C; font-style: italic;margin-top:-6pt;">{PAGENO}/{nbpg} #' . $tid . '</div>');
 
         $pdf->WriteHTML($html);
 
@@ -738,50 +694,46 @@ class Invoices extends CI_Controller
         } else {
             $pdf->Output('DO_#' . $tid . '.pdf', 'I');
         }
-
-
     }
 
-	    public function proforma()
-    {
+    public function proforma() {
 
         $tid = intval($this->input->get('id'));
 
         $data['id'] = $tid;
         $data['title'] = "Invoice $tid";
         $data['invoice'] = $this->invocies->invoice_details($tid, $this->limited);
-        if ($data['invoice']) $data['products'] = $this->invocies->invoice_products($tid);
-        if ($data['invoice']) $data['employee'] = $this->invocies->employee($data['invoice']['eid']);
+        if ($data['invoice'])
+            $data['products'] = $this->invocies->invoice_products($tid);
+        if ($data['invoice'])
+            $data['employee'] = $this->invocies->employee($data['invoice']['eid']);
         ini_set('memory_limit', '-1');
         $html = $this->load->view('invoices/proforma', $data, true);
         //PDF Rendering
         $this->load->library('pdf');
         $pdf = $this->pdf->load();
-        $pdf->SetHTMLFooter('<div style="text-align: right;font-family: serif; font-size: 8pt; color: #5C5C5C; font-style: italic;margin-top:-6pt;">{PAGENO}/{nbpg} #'.$tid.'</div>');
+        $pdf->SetHTMLFooter('<div style="text-align: right;font-family: serif; font-size: 8pt; color: #5C5C5C; font-style: italic;margin-top:-6pt;">{PAGENO}/{nbpg} #' . $tid . '</div>');
         $pdf->WriteHTML($html);
         if ($this->input->get('d')) {
             $pdf->Output('Proforma_#' . $tid . '.pdf', 'D');
         } else {
             $pdf->Output('Proforma_#' . $tid . '.pdf', 'I');
         }
-
-
     }
 
-
-	 public function duplicate()
-    {
+    public function duplicate() {
 
         $tid = intval($this->input->get('id'));
         $data['id'] = $tid;
         $data['title'] = "New Invoice";
         $this->load->model('customers_model', 'customers');
-		$data['lastinvoice'] = $this->invocies->lastinvoice();
+        $data['lastinvoice'] = $this->invocies->lastinvoice();
         $data['customergrouplist'] = $this->customers->group_list();
         $data['terms'] = $this->invocies->billingterms();
         $data['currency'] = $this->invocies->currencies();
         $data['invoice'] = $this->invocies->invoice_details($tid, $this->limited);
-        if ($data['invoice']) $data['products'] = $this->invocies->invoice_products($tid);
+        if ($data['invoice'])
+            $data['products'] = $this->invocies->invoice_products($tid);
 
         $head['usernm'] = $this->aauth->get_user()->username;
         $data['warehouse'] = $this->invocies->warehouses();
@@ -789,9 +741,9 @@ class Invoices extends CI_Controller
         $data['exchange'] = $this->plugins->universal_api(5);
 
         $this->load->view('fixed/header', $head);
-        if ($data['invoice']) $this->load->view('invoices/duplicate', $data);
+        if ($data['invoice'])
+            $this->load->view('invoices/duplicate', $data);
         $this->load->view('fixed/footer');
-
     }
 
 }
